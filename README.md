@@ -10,3 +10,7 @@ Sistema de administración de Gigantes Aguascalientes.
 Compilación con **Dockerfile** (nginx). Puerto interno: **80**.
 
 > Fuera de Claude las apps funcionan en **modo local**: los datos se guardan en el navegador de cada dispositivo (no se comparten entre equipos).
+
+## Referencia
+
+- [Simulación de un partido](docs/simulacion-partido.md): resultados, fórmulas y ejemplo de comanda.
