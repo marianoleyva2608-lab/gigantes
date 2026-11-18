@@ -154,7 +154,7 @@ async function init(){
         render();
       },err=>{clearTimeout(timer);STALE=true;if(err&&err.code==='revoked')READONLY=true;render()});
     });
-  }else{ MODE='local'; loadLocal(); if(!S.productos.length){S.productos=PROD_BASE.map(p=>({...p,activo:true}));saveLocal();} if(!S.eventos.length&&!S.cubeteros.length&&!S.movs.length&&typeof SIM!=='undefined'){for(const c of ['eventos','cubeteros','movs'])S[c]=SIM[c].map(o=>({...o}));pref.ev='evsim01';savePref();saveLocal();} }
+  }else{ MODE='local'; loadLocal(); if(!S.productos.length){S.productos=PROD_BASE.map(p=>({...p,activo:true}));saveLocal();} if(typeof SIM!=='undefined'&&!pref.simCargada&&!S.eventos.some(e=>e.id==='evsim01')){for(const c of ['eventos','cubeteros','movs'])for(const o of SIM[c])if(!S[c].some(x=>x.id===o.id)){const n={...o};if(c==='cubeteros')while(S.cubeteros.some(x=>String(x.numero)===String(n.numero)))n.numero='9'+n.numero;S[c].push(n)}pref.simCargada=1;pref.ev='evsim01';savePref();saveLocal();} }
   render();
 }
 
