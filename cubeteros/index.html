@@ -97,6 +97,24 @@ const money=n=>'$'+(Math.round((n||0)*100)/100).toLocaleString('es-MX',{minimumF
 const fdt=t=>new Date(t).toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
 
+// Catálogo base de productos de estadio (se carga si no hay productos)
+const PROD_BASE=[
+ {id:'p01cervclara',nombre:'Cerveza clara lata 355 ml',precio:70,comision:8,orden:1},
+ {id:'p02cervoscura',nombre:'Cerveza oscura lata 355 ml',precio:70,comision:8,orden:2},
+ {id:'p03cervgrande',nombre:'Cerveza lata 473 ml',precio:85,comision:10,orden:3},
+ {id:'p04michelada',nombre:'Michelada',precio:110,comision:12,orden:4},
+ {id:'p05refresco',nombre:'Refresco lata 355 ml',precio:40,comision:5,orden:5},
+ {id:'p06agua',nombre:'Agua natural 600 ml',precio:30,comision:4,orden:6},
+ {id:'p07mineral',nombre:'Agua mineral 355 ml',precio:35,comision:4,orden:7},
+ {id:'p08hidratante',nombre:'Bebida hidratante 600 ml',precio:45,comision:5,orden:8},
+ {id:'p09papas',nombre:'Papas fritas bolsa',precio:35,comision:4,orden:9},
+ {id:'p10chascas',nombre:'Chascas (vaso de elote)',precio:60,comision:6,orden:10},
+ {id:'p11cacahuates',nombre:'Cacahuates japoneses',precio:30,comision:4,orden:11},
+ {id:'p12palomitas',nombre:'Palomitas',precio:45,comision:5,orden:12},
+ {id:'p13churros',nombre:'Churros',precio:40,comision:5,orden:13},
+ {id:'p14pepitas',nombre:'Pepitas / semillas',precio:30,comision:4,orden:14},
+ {id:'p15dulces',nombre:'Dulces / gomitas',precio:30,comision:4,orden:15},
+];
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(LSKEY)||'{}');COLS.forEach(c=>S[c]=Array.isArray(d[c])?d[c]:[])}catch(e){}}
 function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify(S))}catch(e){toast('No se pudo guardar en este navegador')}}
 
@@ -131,7 +149,7 @@ async function init(){
         render();
       },err=>{clearTimeout(timer);STALE=true;if(err&&err.code==='revoked')READONLY=true;render()});
     });
-  }else{ MODE='local'; loadLocal(); }
+  }else{ MODE='local'; loadLocal(); if(!S.productos.length){S.productos=PROD_BASE.map(p=>({...p,activo:true}));saveLocal();} }
   render();
 }
 
