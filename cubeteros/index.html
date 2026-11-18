@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gigantes · Control de Cubeteros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0d3963;--navy2:#082848;--sky:#6cb3df;--sky2:#e3f1fa;--red:#c8102e;--ink:#10223a;--mut:#5b6b80;--line:#d7e2ec;--bg:#f3f7fb;--ok:#1b8a4b;--warn:#c27c00}
+*{box-sizing:border-box}
+body{margin:0;font-family:Barlow,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px}
+h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.3px}
+header{background:linear-gradient(135deg,var(--navy2),var(--navy));color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:4px solid var(--red)}
+header img{width:46px;height:auto}
+header h1{margin:0;font-size:24px;line-height:1}
+header small{display:block;color:var(--sky);font-family:Barlow;font-size:13px;letter-spacing:0}
+.hspace{flex:1}
+.evsel{display:flex;align-items:center;gap:8px}
+.evsel select{background:#fff1;color:#fff;border:1px solid #fff5;border-radius:8px;padding:7px 9px;font:inherit}
+.evsel select option{color:#000}
+.pill{font-size:12px;padding:3px 8px;border-radius:99px;background:#fff2;white-space:nowrap}
+.pill.off{background:var(--warn)}
+nav{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--line);padding:0 10px;overflow-x:auto;position:sticky;top:0;z-index:5}
+nav button{border:0;background:none;padding:13px 14px;font:600 15px Barlow;color:var(--mut);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--navy);border-color:var(--red)}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+input,select,textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:0}
+input:focus,select:focus{outline:2px solid var(--sky);border-color:var(--sky)}
+label{font-size:13px;color:var(--mut);display:flex;flex-direction:column;gap:4px}
+.btn{font:700 15px Barlow;border:0;border-radius:9px;padding:11px 16px;cursor:pointer;background:var(--navy);color:#fff}
+.btn.red{background:var(--red)}.btn.sky{background:var(--sky);color:var(--navy2)}.btn.ok{background:var(--ok)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.big{font-size:22px;padding:14px 18px}
+.kpi{background:var(--sky2);border-radius:10px;padding:10px 12px}
+.kpi b{display:block;font:700 26px "Barlow Condensed";color:var(--navy)}
+.kpi span{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.kpi.alert{background:#fde8eb}.kpi.alert b{color:var(--red)}
+.kpi.good{background:#e3f5ea}.kpi.good b{color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-size:12px;text-transform:uppercase;color:var(--mut);border-bottom:2px solid var(--line);padding:8px 6px;letter-spacing:.3px}
+td{border-bottom:1px solid var(--line);padding:9px 6px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer}tr.click:hover{background:var(--sky2)}
+.tw{overflow-x:auto}
+.cub-head{display:flex;align-items:center;gap:14px}
+.num{background:var(--navy);color:#fff;font:800 30px "Barlow Condensed";border-radius:10px;min-width:64px;text-align:center;padding:4px 10px}
+.muted{color:var(--mut);font-size:14px}
+.empty{text-align:center;color:var(--mut);padding:30px}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:#fff;font:700 20px Barlow;cursor:pointer;color:var(--navy)}
+.step input{width:70px;text-align:center;font-weight:700;font-size:18px}
+.prodline{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--sky2);color:var(--navy);font-weight:600}
+.tag.red{background:#fde8eb;color:var(--red)}.tag.ok{background:#e3f5ea;color:var(--ok)}.tag.gray{background:#eee;color:#777}
+.strike{text-decoration:line-through;opacity:.5}
+#modal{position:fixed;inset:0;background:#0009;display:none;align-items:flex-start;justify-content:center;padding:4vh 10px;z-index:20;overflow:auto}
+#modal.on{display:flex}
+#modal .box{background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px}
+#modal h2{margin:0 0 10px;color:var(--navy)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;display:none;z-index:30;max-width:90vw}
+.totalbar{background:var(--navy);color:#fff;border-radius:10px;padding:12px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.totalbar b{font:800 28px "Barlow Condensed"}
+.banner{background:#fff4dc;border:1px solid #f1d38f;color:#7a5200;padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:14px}
+@media(max-width:600px){header h1{font-size:20px}.hide-m{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <img src="data:image/webp;base64,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" alt="Gigantes Aguascalientes">
+  <div><h1>CONTROL DE CUBETEROS</h1><small>Gigantes Aguascalientes · Venta de bebidas</small></div>
+  <div class="hspace"></div>
+  <div class="evsel"><select id="evSel" title="Evento / partido"></select><span id="modePill" class="pill">Cargando…</span></div>
+</header>
+<nav id="nav"></nav>
+<main id="main"><div class="empty">Cargando datos…</div></main>
+<div id="modal"><div class="box" id="mbox"></div></div>
+<div id="toast"></div>
+
+<script>
+// ---------- Datos ----------
+const COLS=['productos','cubeteros','eventos','movs'];
+const S={productos:[],cubeteros:[],eventos:[],movs:[]};
+let DB=null, MODE='cargando', STALE=false, READONLY=false;
+const LSKEY='gig_cubeteros_v1', PREF='gig_cub_pref';
+const pref=(()=>{try{return JSON.parse(localStorage.getItem(PREF)||'{}')}catch(e){return{}}})();
+function savePref(){try{localStorage.setItem(PREF,JSON.stringify(pref))}catch(e){}}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'$'+(Math.round((n||0)*100)/100).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:2});
+const fdt=t=>new Date(t).toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
+
+function loadLocal(){try{const d=JSON.parse(localStorage.getItem(LSKEY)||'{}');COLS.forEach(c=>S[c]=Array.isArray(d[c])?d[c]:[])}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify(S))}catch(e){toast('No se pudo guardar en este navegador')}}
+
+async function put(col,obj){
+  obj={...obj}; if(!obj.id)obj.id=uid();
+  if(DB){
+    const {id,...rest}=obj;
+    try{await DB.collection(col).doc(id).set(JSON.parse(JSON.stringify(rest)))}
+    catch(e){ if(e&&e.code==='invalid_argument'){READONLY=true;toast('No tienes permiso para guardar cambios');render()}
+      else if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,800+Math.random()*800));await DB.collection(col).doc(id).set(JSON.parse(JSON.stringify(rest)))}
+      else{toast('Error al guardar: '+(e&&e.message||e));throw e} }
+  }else{
+    const a=S[col],i=a.findIndex(x=>x.id===obj.id); if(i>=0)a[i]=obj; else a.push(obj); saveLocal(); render();
+  }
+  return obj;
+}
+async function remove(col,id){
+  if(DB){try{await DB.collection(col).doc(id).delete()}catch(e){toast('Error al borrar')}}
+  else{S[col]=S[col].filter(x=>x.id!==id);saveLocal();render()}
+}
+
+async function init(){
+  let db=null;
+  try{ if(window.claude&&claude.use) db=await claude.use('db'); }catch(e){db=null}
+  if(db){
+    DB=db; MODE='nube'; let pending=new Set(COLS);
+    const timer=setTimeout(()=>{STALE=true;render()},10000);
+    COLS.forEach(c=>{
+      db.collection(c).onSnapshot(snap=>{
+        S[c]=snap.docs.map(d=>({id:d.id,...d.data()}));
+        if(!snap.metadata.fromCache){pending.delete(c); if(!pending.size){clearTimeout(timer);STALE=false}}
+        render();
+      },err=>{clearTimeout(timer);STALE=true;if(err&&err.code==='revoked')READONLY=true;render()});
+    });
+  }else{ MODE='local'; loadLocal(); }
+  render();
+}
+
+// ---------- Cálculos ----------
+const prod=id=>S.productos.find(p=>p.id===id);
+const cubOf=id=>S.cubeteros.find(c=>c.id===id);
+const evActual=()=>S.eventos.find(e=>e.id===pref.ev)||S.eventos.filter(e=>e.estado!=='cerrado').sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))[0]||null;
+const movsDe=(ev,cub)=>S.movs.filter(m=>m.ev===ev&&!m.anulado&&(!cub||m.cub===cub));
+
+function resumen(ev,cub){
+  const r={porProd:{},pzEnt:0,pzDev:0,pzVend:0,venta:0,com:0,debe:0,ef:0,tj:0,pagado:0,saldo:0,valorEnMano:0,cerrado:false,movs:0};
+  const ms=movsDe(ev,cub); r.movs=ms.length;
+  for(const m of ms){
+    if(m.tipo==='entrega'||m.tipo==='devolucion'){
+      for(const [k,q] of Object.entries(m.items||{})){
+        const pp=r.porProd[k]||(r.porProd[k]={ent:0,dev:0});
+        if(m.tipo==='entrega')pp.ent+=q; else pp.dev+=q;
+      }
+    }
+    if(m.tipo==='pago'){ if(m.metodo==='tarjeta')r.tj+=m.monto||0; else r.ef+=m.monto||0; }
+    if(m.final)r.cerrado=true;
+  }
+  for(const [k,pp] of Object.entries(r.porProd)){
+    const p=prod(k)||{precio:0,comision:0};
+    pp.vend=pp.ent-pp.dev; pp.venta=pp.vend*(+p.precio||0); pp.com=pp.vend*(+p.comision||0);
+    r.pzEnt+=pp.ent;r.pzDev+=pp.dev;r.pzVend+=pp.vend;r.venta+=pp.venta;r.com+=pp.com;
+  }
+  r.pagado=r.ef+r.tj; r.debe=r.venta-r.com; r.saldo=r.debe-r.pagado;
+  return r;
+}
+
+// ---------- UI ----------
+const TABS=[['op','Operación'],['corte','Cubeteros en evento'],['rep','Reporte'],['cfg','Configuración']];
+let TAB=pref.tab||'op', SEL=null;
+
+function render(){
+  const pill=$('#modePill');
+  pill.textContent=MODE==='nube'?(STALE?'Sin conexión · reintentando':'En línea · compartido'):MODE==='local'?'Solo este dispositivo':'Cargando…';
+  pill.className='pill'+((MODE==='local'||STALE)?' off':'');
+  const ev=evActual();
+  const sel=$('#evSel');
+  const evs=[...S.eventos].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  sel.innerHTML=evs.length?evs.map(e=>`<option value="${e.id}" ${ev&&e.id===ev.id?'selected':''}>${esc(e.nombre)}${e.estado==='cerrado'?' (cerrado)':''}</option>`).join(''):'<option>Sin eventos</option>';
+  $('#nav').innerHTML=TABS.map(([k,l])=>`<button class="${TAB===k?'on':''}" data-tab="${k}">${l}</button>`).join('');
+  const m=$('#main');
+  let h='';
+  if(MODE==='local')h+=`<div class="banner">Modo local: los datos se guardan solo en este navegador. Para compartir entre tablets abre la app desde su enlace de Claude con tu cuenta.</div>`;
+  if(READONLY)h+=`<div class="banner">Tienes acceso de solo lectura. Pide al administrador permiso de <b>Colaborador</b> para registrar movimientos.</div>`;
+  if(TAB==='cfg')h+=viewCfg();
+  else if(!S.productos.length||!S.cubeteros.length||!ev)h+=viewOnboard(ev);
+  else if(TAB==='op')h+=viewOp(ev);
+  else if(TAB==='corte')h+=viewCorte(ev);
+  else if(TAB==='rep')h+=viewRep(ev);
+  const focusId=document.activeElement&&document.activeElement.id;
+  m.innerHTML=h;
+  if(focusId==='buscar'||(TAB==='op'&&!SEL)){const b=$('#buscar');if(b&&focusId==='buscar'){b.focus();b.setSelectionRange(b.value.length,b.value.length)}}
+}
+
+function viewOnboard(ev){
+  const ok=(b)=>b?'<span class="tag ok">Listo</span>':'<span class="tag red">Pendiente</span>';
+  return `<div class="card"><h2>Primeros pasos</h2>
+  <p class="muted">Configura esto una vez y luego todo se maneja desde <b>Operación</b>.</p>
+  <div class="prodline"><span>1. Da de alta los productos con precio y comisión por pieza</span>${ok(S.productos.length)}</div>
+  <div class="prodline"><span>2. Registra a los cubeteros (número de gafete y nombre)</span>${ok(S.cubeteros.length)}</div>
+  <div class="prodline"><span>3. Crea el evento o partido de hoy</span>${ok(ev)}</div>
+  <p><button class="btn red" data-tab="cfg">Ir a Configuración</button></p></div>`;
+}
+
+// ----- Operación -----
+let QUERY='';
+function viewOp(ev){
+  const cerrado=ev.estado==='cerrado';
+  let h=`<div class="card"><div class="row">
+    <input id="buscar" class="big" style="flex:1;min-width:200px" placeholder="No. de gafete o nombre del cubetero" value="${esc(QUERY)}" autocomplete="off" inputmode="search">
+  </div>`;
+  const q=QUERY.trim().toLowerCase();
+  if(q&&!SEL){
+    const res=S.cubeteros.filter(c=>c.activo!==false&&(String(c.numero)===q||String(c.numero).startsWith(q)||(c.nombre||'').toLowerCase().includes(q))).slice(0,8);
+    h+=res.length?res.map(c=>`<div class="prodline click" data-pick="${c.id}" style="cursor:pointer"><span><b>#${esc(c.numero)}</b> ${esc(c.nombre)}</span><span class="tag">Seleccionar</span></div>`).join(''):'<p class="muted">Sin coincidencias.</p>';
+  }
+  h+=`<p class="muted" style="margin:8px 0 0">Escribe el número y presiona Enter. Un lector de código de barras/QR USB o Bluetooth funciona igual que el teclado.</p></div>`;
+  if(SEL){
+    const c=cubOf(SEL); if(!c){SEL=null;return h}
+    const r=resumen(ev.id,c.id);
+    // valor en mano: lo que traería si vendió todo lo no devuelto
+    h+=`<div class="card"><div class="cub-head"><div class="num">${esc(c.numero)}</div><div style="flex:1"><h2 style="margin:0">${esc(c.nombre)}</h2><div class="muted">${esc(c.telefono||'')} ${c.deposito?'· Depósito '+money(c.deposito):''}</div></div>
+      ${r.cerrado?'<span class="tag ok">Corte cerrado</span>':''}<button class="btn ghost sm" data-act="cerrarSel">✕</button></div>
+      <div class="grid" style="margin-top:14px">
+        <div class="kpi"><span>Piezas entregadas</span><b>${r.pzEnt}</b></div>
+        <div class="kpi"><span>Devueltas</span><b>${r.pzDev}</b></div>
+        <div class="kpi"><span>Valor por cobrar*</span><b>${money(r.debe)}</b></div>
+        <div class="kpi good"><span>Pagado</span><b>${money(r.pagado)}</b></div>
+        <div class="kpi ${r.saldo>0.009?'alert':'good'}"><span>Saldo pendiente</span><b>${money(r.saldo)}</b></div>
+      </div>
+      <p class="muted" style="margin:6px 0 0">*Lo entregado menos lo devuelto, ya descontada su comisión (${money(r.com)}).</p>
+      <div class="row" style="margin-top:14px">
+        <button class="btn big" data-act="entrega" ${cerrado||READONLY?'disabled':''}>＋ Entregar producto</button>
+        <button class="btn big ok" data-act="pago" ${cerrado||READONLY?'disabled':''}>$ Recibir pago</button>
+        <button class="btn big red" data-act="corte" ${cerrado||READONLY?'disabled':''}>Corte final</button>
+      </div></div>`;
+    h+=histHTML(movsAll(ev.id,c.id));
+  }
+  return h;
+}
+const movsAll=(ev,cub)=>S.movs.filter(m=>m.ev===ev&&m.cub===cub).sort((a,b)=>b.ts-a.ts);
+function itemsTxt(items){return Object.entries(items||{}).filter(([,q])=>q).map(([k,q])=>`${q} ${esc((prod(k)||{nombre:'?'}).nombre)}`).join(', ')}
+function histHTML(ms){
+  if(!ms.length)return `<div class="card"><p class="muted" style="margin:0">Sin movimientos en este evento.</p></div>`;
+  const lbl={entrega:['Entrega',''],devolucion:['Devolución','gray'],pago:['Pago','ok']};
+  return `<div class="card"><h3 style="margin-top:0">Movimientos</h3><div class="tw"><table><tr><th>Hora</th><th>Tipo</th><th>Detalle</th><th class="hide-m">Registró</th><th></th></tr>`+
+  ms.map(m=>`<tr class="${m.anulado?'strike':''}"><td>${fdt(m.ts)}</td><td><span class="tag ${lbl[m.tipo][1]}">${lbl[m.tipo][0]}${m.final?' final':''}</span></td>
+   <td>${m.tipo==='pago'?money(m.monto)+' '+(m.metodo==='tarjeta'?'tarjeta':'efectivo'):itemsTxt(m.items)}${m.nota?' · '+esc(m.nota):''}</td>
+   <td class="hide-m muted">${esc(m.por||'')}</td>
+   <td>${m.anulado?'<span class="muted">anulado</span>':(READONLY?'':`<button class="btn ghost sm" data-anular="${m.id}">Anular</button>`)}</td></tr>`).join('')+`</table></div></div>`;
+}
+
+// ----- Modales de captura -----
+function openModal(html){const mb=$("#mbox");mb.oninput=null;mb._upd=null;mb.dataset.bad="";mb.innerHTML=html;$('#modal').classList.add('on')}
+function closeModal(){$('#modal').classList.remove('on')}
+function stepper(p,val=0,extra=''){return `<div class="prodline"><div><b>${esc(p.nombre)}</b> <span class="muted">${money(p.precio)}</span>${extra}</div>
+ <div class="step"><button type="button" data-st="${p.id}" data-d="-1">−</button><input type="number" min="0" inputmode="numeric" id="q_${p.id}" value="${val}"><button type="button" data-st="${p.id}" data-d="1">+</button>
+ <button type="button" class="btn ghost sm" data-st="${p.id}" data-d="12">+12</button><button type="button" class="btn ghost sm" data-st="${p.id}" data-d="24">+24</button></div></div>`}
+const activos=()=>S.productos.filter(p=>p.activo!==false).sort((a,b)=>(a.orden||0)-(b.orden||0)||a.nombre.localeCompare(b.nombre));
+function readItems(list){const o={};let t=0;for(const p of list){const v=Math.max(0,parseInt(($('#q_'+p.id)||{}).value)||0);if(v){o[p.id]=v;t+=v}}return [o,t]}
+
+function modalEntrega(){
+  const c=cubOf(SEL);
+  openModal(`<h2>Entregar a #${esc(c.numero)} ${esc(c.nombre)}</h2>${activos().map(p=>stepper(p)).join('')}
+   <div class="totalbar"><span>Valor de la entrega</span><b id="tot">$0</b></div>
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" data-act="cerrarModal">Cancelar</button><button class="btn" data-act="guardarEntrega">Registrar entrega</button></div>`);
+  liveTotal(()=>{const [o]=readItems(activos());return Object.entries(o).reduce((s,[k,q])=>s+q*prod(k).precio,0)});
+}
+function modalPago(){
+  const ev=evActual(),c=cubOf(SEL),r=resumen(ev.id,c.id);
+  openModal(`<h2>Pago de #${esc(c.numero)} ${esc(c.nombre)}</h2>
+   <p class="muted">Corte parcial: recibe el dinero de lo que ya vendió. Saldo si vendió todo lo entregado: <b>${money(r.saldo)}</b></p>
+   <div class="grid"><label>Efectivo<input type="number" min="0" step="any" id="pEf" inputmode="decimal" placeholder="0"></label>
+   <label>Tarjeta / terminal<input type="number" min="0" step="any" id="pTj" inputmode="decimal" placeholder="0"></label></div>
+   <label style="margin-top:10px">Nota (opcional)<input id="pNota"></label>
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" data-act="cerrarModal">Cancelar</button><button class="btn ok" data-act="guardarPago">Registrar pago</button></div>`);
+  setTimeout(()=>$('#pEf')&&$('#pEf').focus(),50);
+}
+function modalCorte(){
+  const ev=evActual(),c=cubOf(SEL),r0=resumen(ev.id,c.id);
+  const list=activos().filter(p=>r0.porProd[p.id]);
+  if(!list.length){toast('Este cubetero no tiene entregas');return}
+  openModal(`<h2>Corte final · #${esc(c.numero)} ${esc(c.nombre)}</h2>
+   <p class="muted">Cuenta lo que regresa sin vender. El sistema calcula lo vendido y lo que debe pagar.</p>
+   ${list.map(p=>{const pp=r0.porProd[p.id];return stepper(p,0,` <span class="tag">Trae ${pp.ent-pp.dev}</span>`)}).join('')}
+   <div id="calc" style="margin-top:10px"></div>
+   <div class="grid" style="margin-top:10px"><label>Paga en efectivo<input type="number" min="0" step="any" id="cEf" inputmode="decimal"></label>
+   <label>Paga con tarjeta<input type="number" min="0" step="any" id="cTj" inputmode="decimal" value="0"></label></div>
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" data-act="cerrarModal">Cancelar</button><button class="btn red" data-act="guardarCorte">Cerrar corte</button></div>`);
+  const upd=()=>{
+    const [dev]=readItems(list); let vend=0,venta=0,com=0,bad=false;
+    for(const p of list){const pp=r0.porProd[p.id];const v=pp.ent-pp.dev-(dev[p.id]||0);if(v<0)bad=true;vend+=v;venta+=v*p.precio;com+=v*(p.comision||0)}
+    const saldo=venta-com-r0.pagado;
+    $('#calc').innerHTML=`<div class="grid"><div class="kpi"><span>Vendidas</span><b>${vend}</b></div><div class="kpi"><span>Venta</span><b>${money(venta)}</b></div><div class="kpi"><span>Su comisión</span><b>${money(com)}</b></div><div class="kpi"><span>Ya pagó</span><b>${money(r0.pagado)}</b></div></div>
+     ${bad?'<p class="tag red" style="display:inline-block;margin-top:8px">Devuelve más de lo que trae</p>':''}
+     <div class="totalbar"><span>Debe pagar ahora</span><b>${money(saldo)}</b></div>`;
+    const ef=$('#cEf'); if(!ef.dataset.touched){ef.value=Math.max(0,Math.round(saldo*100)/100)}
+    $('#mbox').dataset.bad=bad?'1':'';
+  };
+  $('#cEf').addEventListener('input',e=>e.target.dataset.touched='1');
+  $('#mbox').oninput=upd; $('#mbox')._upd=upd; upd();
+}
+function liveTotal(fn){const u=()=>$('#tot').textContent=money(fn());$('#mbox').oninput=u;$('#mbox')._upd=u;u()}
+
+function baseMov(tipo){const ev=evActual();return{ev:ev.id,cub:SEL,tipo,ts:Date.now(),por:pref.punto||''}}
+async function guardarEntrega(){
+  const [items,t]=readItems(activos()); if(!t)return toast('Captura al menos una pieza');
+  closeModal(); await put('movs',{...baseMov('entrega'),items}); toast('Entrega registrada: '+t+' pzs');
+}
+async function guardarPago(){
+  const ef=+$('#pEf').value||0,tj=+$('#pTj').value||0,nota=$('#pNota').value.trim();
+  if(ef<0||tj<0||(!ef&&!tj))return toast('Captura un monto');
+  closeModal();
+  if(ef)await put('movs',{...baseMov('pago'),monto:ef,metodo:'efectivo',nota});
+  if(tj)await put('movs',{...baseMov('pago'),monto:tj,metodo:'tarjeta',nota});
+  toast('Pago registrado: '+money(ef+tj));
+}
+async function guardarCorte(){
+  if($('#mbox').dataset.bad)return toast('Revisa las devoluciones');
+  const ev=evActual(),r0=resumen(ev.id,SEL);
+  const list=activos().filter(p=>r0.porProd[p.id]);
+  const [items]=readItems(list);
+  const ef=+$('#cEf').value||0,tj=+$('#cTj').value||0;
+  closeModal();
+  await put('movs',{...baseMov('devolucion'),items,final:true});
+  if(ef)await put('movs',{...baseMov('pago'),monto:ef,metodo:'efectivo',final:true});
+  if(tj)await put('movs',{...baseMov('pago'),monto:tj,metodo:'tarjeta',final:true});
+  const r=resumen(ev.id,SEL);
+  toast(Math.abs(r.saldo)<0.01?'Corte cerrado, cuenta saldada':'Corte cerrado con diferencia de '+money(r.saldo));
+}
+
+// ----- Cubeteros en evento -----
+function viewCorte(ev){
+  const rows=S.cubeteros.map(c=>({c,r:resumen(ev.id,c.id)})).filter(x=>x.r.movs>0).sort((a,b)=>b.r.saldo-a.r.saldo);
+  if(!rows.length)return `<div class="card empty">Aún no hay cubeteros con movimientos en <b>${esc(ev.nombre)}</b>.</div>`;
+  return `<div class="card"><h2 style="margin-top:0">${esc(ev.nombre)} · ${rows.length} cubeteros</h2><div class="tw"><table>
+  <tr><th>#</th><th>Nombre</th><th class="n">Entregó</th><th class="n">Devolvió</th><th class="n">Vendió</th><th class="n">Por cobrar</th><th class="n">Pagado</th><th class="n">Saldo</th><th>Estado</th></tr>
+  ${rows.map(({c,r})=>`<tr class="click" data-goto="${c.id}"><td><b>${esc(c.numero)}</b></td><td>${esc(c.nombre)}</td><td class="n">${r.pzEnt}</td><td class="n">${r.pzDev}</td><td class="n">${r.cerrado?r.pzVend:'—'}</td><td class="n">${money(r.debe)}</td><td class="n">${money(r.pagado)}</td>
+  <td class="n" style="color:${r.saldo>0.009?'var(--red)':'var(--ok)'};font-weight:700">${money(r.saldo)}</td><td>${r.cerrado?(Math.abs(r.saldo)<0.01?'<span class="tag ok">Liquidado</span>':'<span class="tag red">Con diferencia</span>'):'<span class="tag">Vendiendo</span>'}</td></tr>`).join('')}
+  </table></div><p class="muted">Toca un renglón para abrir al cubetero. "Vendió" aparece al cerrar su corte.</p></div>`;
+}
+
+// ----- Reporte -----
+function viewRep(ev){
+  const R=resumen(ev.id,null);
+  const porCub=S.cubeteros.map(c=>({c,r:resumen(ev.id,c.id)})).filter(x=>x.r.movs).sort((a,b)=>b.r.venta-a.r.venta);
+  const abiertos=porCub.filter(x=>!x.r.cerrado).length;
+  return `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(ev.nombre)}</h2><div class="row">
+   <button class="btn ghost sm" data-act="csv">Copiar CSV</button>
+   ${ev.estado==='cerrado'?'<span class="tag gray">Evento cerrado</span>':(READONLY?'':`<button class="btn red sm" data-act="cerrarEv">Cerrar evento</button>`)}</div></div>
+   ${abiertos?`<p class="muted">${abiertos} cubetero(s) sin corte final: sus cifras de venta son estimadas (todo lo no devuelto cuenta como vendido).</p>`:''}
+   <div class="grid" style="margin-top:12px">
+    <div class="kpi"><span>Venta</span><b>${money(R.venta)}</b></div>
+    <div class="kpi"><span>Piezas vendidas</span><b>${R.pzVend}</b></div>
+    <div class="kpi"><span>Comisiones</span><b>${money(R.com)}</b></div>
+    <div class="kpi"><span>Neto a recibir</span><b>${money(R.debe)}</b></div>
+    <div class="kpi good"><span>Efectivo</span><b>${money(R.ef)}</b></div>
+    <div class="kpi good"><span>Tarjeta</span><b>${money(R.tj)}</b></div>
+    <div class="kpi ${R.saldo>0.009?'alert':'good'}"><span>Pendiente</span><b>${money(R.saldo)}</b></div>
+   </div></div>
+   <div class="card"><h3 style="margin-top:0">Por producto</h3><div class="tw"><table><tr><th>Producto</th><th class="n">Entregado</th><th class="n">Devuelto</th><th class="n">Vendido</th><th class="n">Precio</th><th class="n">Venta</th></tr>
+   ${Object.entries(R.porProd).map(([k,pp])=>{const p=prod(k)||{nombre:'?',precio:0};return `<tr><td>${esc(p.nombre)}</td><td class="n">${pp.ent}</td><td class="n">${pp.dev}</td><td class="n"><b>${pp.vend}</b></td><td class="n">${money(p.precio)}</td><td class="n">${money(pp.venta)}</td></tr>`}).join('')||'<tr><td colspan=6 class="muted">Sin datos</td></tr>'}
+   </table></div></div>
+   <div class="card"><h3 style="margin-top:0">Ranking de cubeteros</h3><div class="tw"><table><tr><th>#</th><th>Cubetero</th><th class="n">Vendió</th><th class="n">Venta</th><th class="n">Comisión</th><th class="n">Saldo</th></tr>
+   ${porCub.map(({c,r},i)=>`<tr class="click" data-goto="${c.id}"><td>${i+1}</td><td><b>${esc(c.numero)}</b> ${esc(c.nombre)}</td><td class="n">${r.pzVend}</td><td class="n">${money(r.venta)}</td><td class="n">${money(r.com)}</td><td class="n">${money(r.saldo)}</td></tr>`).join('')||'<tr><td colspan=6 class="muted">Sin datos</td></tr>'}
+   </table></div></div>`;
+}
+function csvEvento(ev){
+  const L=[['Numero','Cubetero','Producto','Entregado','Devuelto','Vendido','Precio','Venta','Comision']];
+  for(const c of S.cubeteros){const r=resumen(ev.id,c.id);for(const [k,pp] of Object.entries(r.porProd)){const p=prod(k)||{};L.push([c.numero,c.nombre,p.nombre,pp.ent,pp.dev,pp.vend,p.precio,pp.venta,pp.com])}}
+  L.push([]);L.push(['Numero','Cubetero','Efectivo','Tarjeta','Saldo']);
+  for(const c of S.cubeteros){const r=resumen(ev.id,c.id);if(r.movs)L.push([c.numero,c.nombre,r.ef,r.tj,r.saldo])}
+  return L.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+}
+
+// ----- Configuración -----
+function viewCfg(){
+  const evs=[...S.eventos].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const dis=READONLY?'disabled':'';
+  return `<div class="card"><h2 style="margin-top:0">Este dispositivo</h2>
+   <label>Nombre del punto de recarga o de quien registra<input id="punto" value="${esc(pref.punto||'')}" placeholder="Ej. Recarga Norte / Juan"></label>
+   <p class="muted">Se guarda en cada movimiento para saber quién lo registró.</p></div>
+  <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Eventos / partidos</h2><button class="btn sm" data-act="nuevoEv" ${dis}>＋ Nuevo evento</button></div>
+   ${evs.map(e=>`<div class="prodline"><span><b>${esc(e.nombre)}</b> <span class="muted">${esc(e.fecha||'')}</span></span><span class="row">${e.estado==='cerrado'?'<span class="tag gray">Cerrado</span>':'<span class="tag ok">Abierto</span>'}<button class="btn ghost sm" data-edev="${e.id}" ${dis}>Editar</button></span></div>`).join('')||'<p class="muted">Sin eventos.</p>'}</div>
+  <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Productos</h2><button class="btn sm" data-act="nuevoProd" ${dis}>＋ Producto</button></div>
+   <div class="tw"><table><tr><th>Producto</th><th class="n">Precio</th><th class="n">Comisión/pza</th><th>Estado</th><th></th></tr>
+   ${activosTodos().map(p=>`<tr><td>${esc(p.nombre)}</td><td class="n">${money(p.precio)}</td><td class="n">${money(p.comision)}</td><td>${p.activo===false?'<span class="tag gray">Inactivo</span>':'<span class="tag ok">Activo</span>'}</td><td><button class="btn ghost sm" data-edprod="${p.id}" ${dis}>Editar</button></td></tr>`).join('')||'<tr><td colspan=5 class="muted">Sin productos.</td></tr>'}</table></div></div>
+  <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Cubeteros (${S.cubeteros.length})</h2><button class="btn sm" data-act="nuevoCub" ${dis}>＋ Cubetero</button></div>
+   <div class="tw"><table><tr><th>#</th><th>Nombre</th><th class="hide-m">Teléfono</th><th class="n hide-m">Depósito</th><th>Estado</th><th></th></tr>
+   ${[...S.cubeteros].sort((a,b)=>(+a.numero||0)-(+b.numero||0)).map(c=>`<tr><td><b>${esc(c.numero)}</b></td><td>${esc(c.nombre)}</td><td class="hide-m">${esc(c.telefono||'')}</td><td class="n hide-m">${c.deposito?money(c.deposito):''}</td><td>${c.activo===false?'<span class="tag gray">Baja</span>':'<span class="tag ok">Activo</span>'}</td><td><button class="btn ghost sm" data-edcub="${c.id}" ${dis}>Editar</button></td></tr>`).join('')||'<tr><td colspan=6 class="muted">Sin cubeteros.</td></tr>'}</table></div></div>`;
+}
+const activosTodos=()=>[...S.productos].sort((a,b)=>(a.orden||0)-(b.orden||0)||a.nombre.localeCompare(b.nombre));
+
+function formModal(title,fields,obj,onSave,onDel){
+  openModal(`<h2>${title}</h2><div class="grid">${fields.map(f=>f.type==='check'?`<label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="f_${f.k}" ${obj[f.k]!==false?'checked':''}> ${f.l}</label>`
+   :f.type==='select'?`<label>${f.l}<select id="f_${f.k}">${f.opts.map(([v,t])=>`<option value="${v}" ${obj[f.k]===v?'selected':''}>${t}</option>`).join('')}</select></label>`
+   :`<label>${f.l}<input id="f_${f.k}" type="${f.type||'text'}" ${f.type==='number'?'step="any" min="0" inputmode="decimal"':''} value="${esc(obj[f.k]??'')}"></label>`).join('')}</div>
+   <div class="row" style="margin-top:16px;justify-content:space-between"><span>${onDel?'<button class="btn ghost sm" data-act="borrar" style="color:var(--red)">Eliminar</button>':''}</span>
+   <span class="row"><button class="btn ghost" data-act="cerrarModal">Cancelar</button><button class="btn" data-act="guardarForm">Guardar</button></span></div>`);
+  FORM={fields,obj,onSave,onDel};
+}
+let FORM=null;
+async function guardarForm(){
+  const o={...FORM.obj};
+  for(const f of FORM.fields){const el=$('#f_'+f.k);o[f.k]=f.type==='check'?el.checked:f.type==='number'?(+el.value||0):el.value.trim()}
+  const err=FORM.onSave(o); if(err)return toast(err);
+}
+const PRODF=[{k:'nombre',l:'Nombre'},{k:'precio',l:'Precio de venta',type:'number'},{k:'comision',l:'Comisión del cubetero por pieza',type:'number'},{k:'orden',l:'Orden en pantalla',type:'number'},{k:'activo',l:'Activo',type:'check'}];
+const CUBF=[{k:'numero',l:'No. de gafete'},{k:'nombre',l:'Nombre completo'},{k:'telefono',l:'Teléfono'},{k:'deposito',l:'Depósito en garantía',type:'number'},{k:'activo',l:'Activo',type:'check'}];
+const EVF=[{k:'nombre',l:'Nombre (ej. Gigantes vs Rival)'},{k:'fecha',l:'Fecha',type:'date'},{k:'estado',l:'Estado',type:'select',opts:[['abierto','Abierto'],['cerrado','Cerrado']]}];
+function editProd(p){formModal(p.id?'Editar producto':'Nuevo producto',PRODF,p,o=>{if(!o.nombre)return'Falta el nombre';if(!o.precio)return'Falta el precio';closeModal();put('productos',o)},
+  p.id&&!S.movs.some(m=>m.items&&m.items[p.id])?()=>{closeModal();remove('productos',p.id)}:null)}
+function editCub(c){formModal(c.id?'Editar cubetero':'Nuevo cubetero',CUBF,c,o=>{if(!o.numero||!o.nombre)return'Número y nombre son obligatorios';
+  if(S.cubeteros.some(x=>x.id!==o.id&&String(x.numero)===String(o.numero)))return'Ese número de gafete ya existe';closeModal();put('cubeteros',o)},
+  c.id&&!S.movs.some(m=>m.cub===c.id)?()=>{closeModal();remove('cubeteros',c.id)}:null)}
+function editEv(e){formModal(e.id?'Editar evento':'Nuevo evento',EVF,e,o=>{if(!o.nombre)return'Falta el nombre';closeModal();if(!o.id)o.id=uid();pref.ev=o.id;savePref();put('eventos',o).then(render)},
+  e.id&&!S.movs.some(m=>m.ev===e.id)?()=>{closeModal();remove('eventos',e.id)}:null)}
+
+// ---------- Eventos de la página ----------
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-tab],[data-act],[data-pick],[data-goto],[data-st],[data-anular],[data-edprod],[data-edcub],[data-edev]');
+  if(!t){if(e.target.id==='modal')closeModal();return}
+  const d=t.dataset;
+  if(d.tab){TAB=d.tab;pref.tab=TAB;savePref();render();return}
+  if(d.pick||d.goto){SEL=d.pick||d.goto;QUERY='';TAB='op';render();window.scrollTo(0,0);return}
+  if(d.st){const i=$('#q_'+d.st);i.value=Math.max(0,(parseInt(i.value)||0)+(+d.d));$('#mbox')._upd&&$('#mbox')._upd();return}
+  if(d.anular){openModal(`<h2>Anular movimiento</h2><p>El movimiento quedará tachado y no contará en los cálculos.</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-act="cerrarModal">Cancelar</button><button class="btn red" data-act="confAnular" data-id="${d.anular}">Anular</button></div>`);return}
+  if(d.edprod){editProd(prod(d.edprod));return}
+  if(d.edcub){editCub(cubOf(d.edcub));return}
+  if(d.edev){editEv(S.eventos.find(x=>x.id===d.edev));return}
+  const A={
+    cerrarSel(){SEL=null;render();setTimeout(()=>$('#buscar')&&$('#buscar').focus(),0)},
+    entrega:modalEntrega,pago:modalPago,corte:modalCorte,cerrarModal:closeModal,
+    guardarEntrega,guardarPago,guardarCorte,guardarForm,
+    borrar(){FORM.onDel&&FORM.onDel()},
+    async confAnular(){const m=S.movs.find(x=>x.id===d.id);closeModal();if(m)await put('movs',{...m,anulado:true,anuladoPor:pref.punto||'',anuladoTs:Date.now()});toast('Movimiento anulado')},
+    nuevoProd(){editProd({activo:true,comision:0,orden:S.productos.length+1})},
+    nuevoCub(){const n=Math.max(0,...S.cubeteros.map(c=>+c.numero||0))+1;editCub({numero:String(n),activo:true})},
+    nuevoEv(){editEv({fecha:new Date().toISOString().slice(0,10),estado:'abierto'})},
+    async cerrarEv(){const ev=evActual();openModal(`<h2>Cerrar evento</h2><p>Ya no se podrán registrar entregas ni pagos en <b>${esc(ev.nombre)}</b>. Puedes reabrirlo desde Configuración.</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-act="cerrarModal">Cancelar</button><button class="btn red" data-act="confCerrarEv">Cerrar evento</button></div>`)},
+    async confCerrarEv(){const ev=evActual();closeModal();await put('eventos',{...ev,estado:'cerrado'});toast('Evento cerrado')},
+    async csv(){try{await navigator.clipboard.writeText(csvEvento(evActual()));toast('CSV copiado: pégalo en Excel o Sheets')}catch(err){openModal(`<h2>CSV del evento</h2><textarea style="width:100%;height:240px">${esc(csvEvento(evActual()))}</textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="cerrarModal">Cerrar</button></div>`)}}
+  };
+  if(A[d.act])A[d.act]();
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='buscar'){QUERY=e.target.value;SEL=null;render()}
+  if(e.target.id==='punto'){pref.punto=e.target.value;savePref()}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.target.id==='buscar'&&e.key==='Enter'){
+    const q=QUERY.trim().toLowerCase();
+    const c=S.cubeteros.find(c=>String(c.numero).toLowerCase()===q)||S.cubeteros.filter(c=>c.activo!==false&&((c.nombre||'').toLowerCase().includes(q)||String(c.numero).startsWith(q)))[0];
+    if(c){SEL=c.id;QUERY='';render()}else toast('No se encontró el cubetero');
+  }
+});
+$('#evSel').addEventListener('change',e=>{pref.ev=e.target.value;savePref();SEL=null;render()});
+render(); init();
+</script>
+</body>
+</html>
