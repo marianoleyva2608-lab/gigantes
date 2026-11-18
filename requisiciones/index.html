@@ -194,7 +194,7 @@ function viewLista(){
   const opts=[['activas','Pendientes'],['todas','Todas'],...['borrador','enviada','aprobada','rechazada','cancelada'].map(e=>[e,ELBL[e]])];
   return kpis()+`<div class="card"><div class="row between"><div class="row" style="flex:1"><input id="q" placeholder="Buscar folio, artículo, proveedor…" value="${esc(Q)}" style="max-width:320px">
    <select id="filtro" style="max-width:200px">${opts.map(([k,l])=>`<option value="${k}" ${FILTRO===k?'selected':''}>${l}</option>`).join('')}${['urgentes','mes'].includes(FILTRO)?`<option value="${FILTRO}" selected>${{urgentes:'Urgentes',mes:'Autorizadas este mes'}[FILTRO]}</option>`:''}</select></div>
-   <div class="row"><button class="btn ghost sm" data-act="formatoBlanco">Formato en blanco</button><button class="btn ghost sm" data-act="csv">Copiar CSV</button><button class="btn red" data-tab="nueva" ${READONLY?'disabled':''}>＋ Nueva requisición</button></div></div>
+   <div class="row"><button class="btn ghost sm" data-act="formatoBlanco">Formato en blanco</button><button class="btn ghost sm" data-act="xls">⬇ Excel</button><button class="btn ghost sm" data-act="csv">Copiar CSV</button><button class="btn red" data-tab="nueva" ${READONLY?'disabled':''}>＋ Nueva requisición</button></div></div>
    <div style="margin-top:12px">${tabla(filtrar())}</div></div>`;
 }
 function viewAprobar(){
@@ -419,6 +419,9 @@ document.addEventListener('click',async e=>{
   if(d.edprov){editProv(S.proveedores.find(p=>p.id===d.edprov));return}
   const A={cerrarModal:closeModal,addItem(){ITEMS.push({desc:'',cant:1,unidad:(cfg().unidades||['pza'])[0],precio:0,prov:''});drawItems();const ins=$('#itemsBox').querySelectorAll('input[data-f=desc]');ins[ins.length-1].focus()},
     guardarReq(){guardarReq(d.enviar==='1')},nuevoProv(){editProv({})},descargar(){descargar()},formatoBlanco(){descargar(true)},
+    async xls(){const n='Requisiciones_'+new Date().toISOString().slice(0,10)+'.csv',data='\ufeff'+csv();
+      try{const d=window.claude&&await claude.use('downloads');if(!d)throw 0;await d.save({filename:n,data});toast('Archivo descargado: '+n);return}catch(e){}
+      const u=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);toast('Archivo descargado: '+n)},
     async csv(){try{await navigator.clipboard.writeText(csv());toast('CSV copiado: pégalo en Excel')}catch(err){openModal(`<h2>CSV</h2><textarea style="height:260px">${esc(csv())}</textarea><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" data-act="cerrarModal">Cerrar</button></div>`)}},
     async guardarCfg(){const c={...cfg(),areas:$('#cAreas').value.split('\n').map(s=>s.trim()).filter(Boolean),unidades:$('#cUni').value.split(',').map(s=>s.trim()).filter(Boolean),limite:+$('#cLim').value||0};await put('config',c);toast('Configuración guardada')}};
   if(A[d.act])A[d.act]();

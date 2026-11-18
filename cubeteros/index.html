@@ -365,7 +365,7 @@ function viewRep(ev){
   const porCub=S.cubeteros.map(c=>({c,r:resumen(ev.id,c.id)})).filter(x=>x.r.movs).sort((a,b)=>b.r.venta-a.r.venta);
   const abiertos=porCub.filter(x=>!x.r.cerrado).length;
   return `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(ev.nombre)}</h2><div class="row">
-   <button class="btn ghost sm" data-act="csv">Copiar CSV</button>
+   <button class="btn ghost sm" data-act="xlsRep">⬇ Excel</button><button class="btn ghost sm" data-act="pdfRep">🖨 PDF</button><button class="btn ghost sm" data-act="csv">Copiar CSV</button>
    ${ev.estado==='cerrado'?'<span class="tag gray">Evento cerrado</span>':(READONLY?'':`<button class="btn red sm" data-act="cerrarEv">Cerrar evento</button>`)}</div></div>
    ${abiertos?`<p class="muted">${abiertos} cubetero(s) sin corte final: sus cifras de venta son estimadas (todo lo no devuelto cuenta como vendido).</p>`:''}
    <div class="grid" style="margin-top:12px">
@@ -474,6 +474,13 @@ function comandaHTML(){
    ${ps.map(p=>`<tr><td class="p">${esc(p.nombre)}</td><td class="pr">${money(p.precio)}</td>${nums.map(n=>`<td class="k${n%6?'':' b'}">${n}</td>`).join('')}</tr>`).join('')}</table>
    <div class="ft"><span>Vendido = X − ◯</span><span>Firma almacén: ____________</span><span>Firma cubetero: ____________</span></div></div>`;
   return hojaHTML('Comanda',css,one+one)}
+function nomArch(t){return String(t||'evento').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w-]+/g,'_').replace(/^_|_$/g,'')}
+function reporteHTML(ev){const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\n');
+  return hojaHTML('Reporte '+ev.nombre,css+`body{background:#fff}.btn,.tag.click{display:none!important}.card{box-shadow:none;break-inside:avoid}tr.click{cursor:default}`,
+   `<div class="bar" style="padding:6px 10px;font-size:14pt"><img src="%LOGO%" style="width:30px;height:30px">REPORTE DE VENTA · CUBETEROS<span style="margin-left:auto;font-size:9pt;font-weight:400">Impreso ${new Date().toLocaleString('es-MX')}</span></div><div style="padding:8px">${viewRep(ev)}</div>`)}
+async function bajarArchivo(nombre,data,tipo){
+  try{const d=window.claude&&await claude.use('downloads');if(!d)throw 0;await d.save({filename:nombre,data});toast('Archivo descargado: '+nombre);return}catch(e){}
+  const u=URL.createObjectURL(new Blob([data],{type:tipo}));const a=document.createElement('a');a.href=u;a.download=nombre;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);toast('Archivo descargado: '+nombre)}
 async function bajarFormato(nombre,html){
   try{const d=window.claude&&await claude.use('downloads');if(!d)throw 0;await d.save({filename:nombre+'.html',data:html});toast('Abre el archivo descargado e imprime');return}catch(e){}
   try{const u=URL.createObjectURL(new Blob([html],{type:'text/html'}));const w=window.open(u,'_blank');
@@ -497,6 +504,7 @@ document.addEventListener('click',async e=>{
     cerrarSel(){SEL=null;render();setTimeout(()=>$('#buscar')&&$('#buscar').focus(),0)},
     entrega:modalEntrega,pago:modalPago,corte:modalCorte,cerrarModal:closeModal,async cargarSim(){if(S.eventos.some(e=>e.id==='evsim01'))return toast('El partido de ejemplo ya está cargado');
       for(const col of ['eventos','cubeteros','movs'])for(const o of SIM[col])await put(col,o);pref.ev='evsim01';savePref();TAB='rep';render();toast('Partido de ejemplo cargado')},
+    xlsRep(){const ev=evActual();bajarArchivo('Reporte_'+nomArch(ev.nombre)+'.csv','\ufeff'+csvEvento(ev),'text/csv;charset=utf-8')},pdfRep(){const ev=evActual();bajarFormato('Reporte_'+nomArch(ev.nombre),reporteHTML(ev))},
     impGafetes(){bajarFormato('Gafetes_Cubeteros_QR',gafetesHTML())},impComanda(){bajarFormato('Comanda_Cubetero',comandaHTML())},
     guardarEntrega,guardarPago,guardarCorte,guardarForm,
     borrar(){FORM.onDel&&FORM.onDel()},
