@@ -194,7 +194,7 @@ function viewLista(){
   const opts=[['activas','Pendientes'],['todas','Todas'],...['borrador','enviada','aprobada','rechazada','cancelada'].map(e=>[e,ELBL[e]])];
   return kpis()+`<div class="card"><div class="row between"><div class="row" style="flex:1"><input id="q" placeholder="Buscar folio, artículo, proveedor…" value="${esc(Q)}" style="max-width:320px">
    <select id="filtro" style="max-width:200px">${opts.map(([k,l])=>`<option value="${k}" ${FILTRO===k?'selected':''}>${l}</option>`).join('')}${['urgentes','mes'].includes(FILTRO)?`<option value="${FILTRO}" selected>${{urgentes:'Urgentes',mes:'Autorizadas este mes'}[FILTRO]}</option>`:''}</select></div>
-   <div class="row"><button class="btn ghost sm" data-act="csv">Copiar CSV</button><button class="btn red" data-tab="nueva" ${READONLY?'disabled':''}>＋ Nueva requisición</button></div></div>
+   <div class="row"><button class="btn ghost sm" data-act="formatoBlanco">Formato en blanco</button><button class="btn ghost sm" data-act="csv">Copiar CSV</button><button class="btn red" data-tab="nueva" ${READONLY?'disabled':''}>＋ Nueva requisición</button></div></div>
    <div style="margin-top:12px">${tabla(filtrar())}</div></div>`;
 }
 function viewAprobar(){
@@ -352,20 +352,44 @@ function flowAct(a){
 
 // Formato descargable (HTML imprimible)
 function formatoHTML(r){
-  const C=r.compra,logo=document.querySelector('header img').src;
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${folioTxt(r.num)}</title><style>body{font-family:Arial,sans-serif;color:#10223a;margin:30px;font-size:13px}h1{color:#0d3963;margin:0}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #bbb;padding:6px}th{background:#0d3963;color:#fff;text-align:left}.n{text-align:right}.hd{display:flex;align-items:center;gap:14px;border-bottom:4px solid #c8102e;padding-bottom:10px}.g{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}.f{margin-top:60px;display:flex;justify-content:space-around}.f div{border-top:1px solid #000;width:200px;text-align:center;padding-top:4px}</style></head><body>
-  <div class="hd"><img src="${logo}" width="70"><div><h1>REQUISICIÓN DE COMPRA ${folioTxt(r.num)}</h1>Gigantes Aguascalientes · Administración</div></div>
-  <div class="g"><div><b>Solicitante:</b> ${esc(r.solicitante)}</div><div><b>Área:</b> ${esc(r.area)}</div><div><b>Fecha:</b> ${fd(r.creada)}</div><div><b>Requerida para:</b> ${r.fechaReq||'—'}</div><div><b>Estado:</b> ${ELBL[r.estado]}</div><div><b>Urgente:</b> ${r.urgente?'Sí':'No'}</div></div>
-  <p><b>Motivo:</b> ${esc(r.motivo||'')}</p>
-  <table><tr><th>#</th><th>Descripción</th><th class="n">Cant.</th><th>Unidad</th><th class="n">P. unitario</th><th class="n">Importe</th></tr>${(r.items||[]).map((i,k)=>{const p=C?(i.precioReal??i.precio):i.precio;return `<tr><td>${k+1}</td><td>${esc(i.desc)}</td><td class="n">${i.cant}</td><td>${esc(i.unidad)}</td><td class="n">${money(p)}</td><td class="n">${money(p*i.cant)}</td></tr>`}).join('')}
-  ${C&&C.extra?`<tr><td colspan=5 class="n">Envío / otros</td><td class="n">${money(C.extra)}</td></tr>`:''}<tr><td colspan=5 class="n"><b>TOTAL ${C?'':'ESTIMADO'}</b></td><td class="n"><b>${money(C?totReal(r):totEst(r))}</b></td></tr></table>
-  ${C?`<p><b>Proveedor:</b> ${esc(C.proveedor)} · <b>Factura/OC:</b> ${esc(C.factura||'—')} · <b>Pago:</b> ${esc(C.pago||'')} · <b>Fecha compra:</b> ${C.fecha}</p>`:''}
-  ${r.obs?`<p><b>Observaciones:</b> ${esc(r.obs)}</p>`:''}
-  <div class="f"><div>Solicita<br>${esc(r.solicitante)}</div><div>Autoriza (Administración)<br>${esc(([...(r.hist||[])].reverse().find(h=>/Aprob|Autoriz/.test(h.accion))||{}).quien||'')}</div></div></body></html>`;
+  const logo=document.querySelector('header img').src,blank=!r.num;
+  const aut=[...(r.hist||[])].reverse().find(h=>/Aprob|Autoriz/.test(h.accion));
+  const items=[...(r.items||[])];while(items.length<16)items.push(null);
+  const v=x=>blank?'':esc(x||'');
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${blank?'Requisición de compra':folioTxt(r.num)}</title><style>
+@page{size:letter;margin:10mm}*{box-sizing:border-box}
+body{font-family:Calibri,Carlito,Arial,sans-serif;color:#000;margin:0 auto;max-width:800px;padding:14px;font-size:11px}
+table{width:100%;border-collapse:collapse}td,th{border:1px solid #000;padding:3px 5px}
+.hd td{vertical-align:middle}.hd .lg{width:92px;text-align:center;padding:4px}.hd .lg img{width:78px}
+.hd .tt{text-align:center;font-size:17px;font-weight:bold;color:#0d3963}.hd .ctl{width:150px;font-size:9px;line-height:1.5}
+.hd .ctl b{display:inline-block;width:72px;font-weight:normal}
+.lb{font-weight:bold;background:#e9eef4;white-space:nowrap}.c{text-align:center}.n{text-align:right}
+.it{margin-top:-1px}.it th{background:#0d3963;color:#fff;font-size:10px;line-height:1.25}.it th small{font-weight:normal;display:block}
+.it td{height:27px;font-size:10.5px;text-align:center}.it td.d{text-align:left}.it td.n{text-align:right}
+.tot td{font-weight:bold;background:#e9eef4}
+.jt{margin-top:10px}.jt th{background:#e9eef4;font-size:11px}.jt td{height:46px;text-align:center;font-size:12px}
+.fr{width:84%;margin:22px auto 0}.fr td{height:52px;text-align:center;vertical-align:bottom;font-size:11px;width:50%}.fr tr:last-child td{height:auto;font-weight:bold;padding:4px}
+.x{display:inline-block;width:24px;text-align:center;font-weight:bold}
+.bar{height:5px;background:#c8102e;margin-top:10px}
+</style></head><body>
+<table class="hd"><tr><td class="lg" rowspan="3"><img src="${logo}"></td><td class="tt" colspan="6">Requisición de compra</td>
+<td class="ctl" rowspan="3"><b>No. de Documento</b>GA-REQ-F1<br><b>Revisión</b>00<br><b>Folio</b><span style="color:#c8102e;font-weight:bold">${blank?'':folioTxt(r.num)}</span><br><b>Fecha emisión</b>18/11/2026</td></tr>
+<tr><td class="lb">FECHA</td><td>${blank?'':fd(r.creada)}</td><td class="lb">ÁREA / DEPTO.</td><td colspan="3">${v(r.area)}</td></tr>
+<tr><td class="lb">SOLICITANTE</td><td>${v(r.solicitante)}</td><td class="lb">REQUERIDA PARA</td><td>${blank?'':(r.fechaReq?fd(r.fechaReq+'T12:00'):'—')}</td>
+<td class="lb">TIPO DE SOLICITUD</td><td style="white-space:nowrap">Normal <span class="x">${!blank&&!r.urgente?'X':''}</span> Urgente <span class="x">${!blank&&r.urgente?'X':''}</span></td></tr></table>
+<table class="it"><tr><th style="width:26px">#</th><th style="width:62px">CANTIDAD</th><th style="width:78px">UNIDAD<small>(pieza, caja, paquete, litros, etc.)</small></th>
+<th>DESCRIPCIÓN<small>(nombre, marca, modelo, presentación, medidas)</small></th><th style="width:140px">PROVEEDOR SUGERIDO<small>(nombre, contacto, teléfono)</small></th><th style="width:78px">PRECIO UNIT. EST.</th><th style="width:84px">IMPORTE</th></tr>
+${items.map((i,k)=>i?`<tr><td>${k+1}</td><td>${i.cant}</td><td>${esc(i.unidad)}</td><td class="d">${esc(i.desc)}</td><td>${esc(i.prov||'')}</td><td class="n">${money(i.precio)}</td><td class="n">${money(i.precio*i.cant)}</td></tr>`:`<tr><td>${k+1}</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`).join('')}
+<tr class="tot"><td colspan="6" class="n">TOTAL ESTIMADO</td><td class="n">${blank?'':money(totEst(r))}</td></tr></table>
+<table class="jt"><tr><th>JUSTIFICACIÓN (necesidad de la compra del material).</th></tr><tr><td>${v(r.motivo)}${!blank&&r.obs?`<div style="font-size:10.5px;margin-top:4px">Obs.: ${esc(r.obs)}</div>`:''}</td></tr></table>
+<table class="fr"><tr><td>${v(r.solicitante)}</td><td>${blank?'':esc(aut?aut.quien+' · '+fd(aut.ts):'')}</td></tr>
+<tr><td>Solicitó (Nombre y firma)</td><td>Autorizó · Administración (Nombre y firma)</td></tr></table>
+<div class="bar"></div>
+</body></html>`;
 }
-async function descargar(){
-  const r=S.reqs.find(x=>x.id===OPEN);if(!r)return;
-  try{const d=window.claude&&await claude.use('downloads');if(!d)throw 0;await d.save({filename:folioTxt(r.num)+'.html',data:formatoHTML(r)});toast('Abre el archivo y usa Imprimir → Guardar como PDF')}
+async function descargar(blank){
+  const r=blank?{}:S.reqs.find(x=>x.id===OPEN);if(!r)return;
+  try{const d=window.claude&&await claude.use('downloads');if(!d)throw 0;await d.save({filename:(blank?'Formato_requisicion':folioTxt(r.num))+'.html',data:formatoHTML(r)});toast('Abre el archivo y usa Imprimir → Guardar como PDF')}
   catch(e){toast('No se pudo descargar en este navegador')}
 }
 function csv(){
@@ -392,7 +416,7 @@ document.addEventListener('click',async e=>{
   if(d.delitem!=null){ITEMS.splice(+d.delitem,1);if(!ITEMS.length)ITEMS.push({desc:'',cant:1,unidad:'pza',precio:0,prov:''});drawItems();return}
   if(d.edprov){editProv(S.proveedores.find(p=>p.id===d.edprov));return}
   const A={cerrarModal:closeModal,addItem(){ITEMS.push({desc:'',cant:1,unidad:(cfg().unidades||['pza'])[0],precio:0,prov:''});drawItems();const ins=$('#itemsBox').querySelectorAll('input[data-f=desc]');ins[ins.length-1].focus()},
-    guardarReq(){guardarReq(d.enviar==='1')},nuevoProv(){editProv({})},descargar,
+    guardarReq(){guardarReq(d.enviar==='1')},nuevoProv(){editProv({})},descargar(){descargar()},formatoBlanco(){descargar(true)},
     async csv(){try{await navigator.clipboard.writeText(csv());toast('CSV copiado: pégalo en Excel')}catch(err){openModal(`<h2>CSV</h2><textarea style="height:260px">${esc(csv())}</textarea><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" data-act="cerrarModal">Cerrar</button></div>`)}},
     async guardarCfg(){const c={...cfg(),areas:$('#cAreas').value.split('\n').map(s=>s.trim()).filter(Boolean),unidades:$('#cUni').value.split(',').map(s=>s.trim()).filter(Boolean),limite:+$('#cLim').value||0};await put('config',c);toast('Configuración guardada')}};
   if(A[d.act])A[d.act]();
