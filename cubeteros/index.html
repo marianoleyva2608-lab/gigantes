@@ -152,7 +152,7 @@ async function init(){
         render();
       },err=>{clearTimeout(timer);STALE=true;if(err&&err.code==='revoked')READONLY=true;render()});
     });
-  }else{ MODE='local'; loadLocal(); if(!S.productos.length){S.productos=PROD_BASE.map(p=>({...p,activo:true}));saveLocal();} }
+  }else{ MODE='local'; loadLocal(); if(!S.productos.length){S.productos=PROD_BASE.map(p=>({...p,activo:true}));saveLocal();} if(!S.eventos.length&&!S.cubeteros.length&&!S.movs.length&&typeof SIM!=='undefined'){for(const c of ['eventos','cubeteros','movs'])S[c]=SIM[c].map(o=>({...o}));pref.ev='evsim01';savePref();saveLocal();} }
   render();
 }
 
