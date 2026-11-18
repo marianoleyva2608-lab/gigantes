@@ -135,8 +135,8 @@ async function init(){
 // ---------- Config ----------
 const DEF_AREAS=['Bebidas / Almacén','Administración','Mantenimiento','Taquilla','Equipo deportivo','Mercadotecnia','Limpieza'];
 const cfg=()=>S.config.find(c=>c.id==='general')||{id:'general',areas:DEF_AREAS,limite:0,unidades:['pza','caja','paquete','kg','lt','servicio']};
-const ESTADOS=['borrador','enviada','aprobada','comprada','recibida','cerrada'];
-const ELBL={borrador:'Borrador',enviada:'Por aprobar',aprobada:'Aprobada',rechazada:'Rechazada',comprada:'Comprada',parcial:'Recibida parcial',recibida:'Recibida',cerrada:'Cerrada',cancelada:'Cancelada'};
+const ESTADOS=['borrador','enviada','aprobada'];
+const ELBL={borrador:'Borrador',enviada:'Por autorizar',aprobada:'Autorizada',rechazada:'Rechazada',comprada:'Comprada',parcial:'Recibida parcial',recibida:'Recibida',cerrada:'Cerrada',cancelada:'Cancelada'};
 const tagE=e=>`<span class="tag e-${e}">${ELBL[e]||e}</span>`;
 const totEst=r=>(r.items||[]).reduce((s,i)=>s+(+i.cant||0)*(+i.precio||0),0);
 const totReal=r=>r.compra?(r.items||[]).reduce((s,i)=>s+(+i.cant||0)*(+(i.precioReal??i.precio)||0),0)+(+r.compra.extra||0):0;
@@ -146,10 +146,10 @@ let TAB=pref.tab||'lista',FILTRO=pref.filtro||'activas',Q='';
 function render(){
   $('#modePill').textContent=MODE==='nube'?(STALE?'Sin conexión':'En línea'):MODE==='local'?'Solo este dispositivo':'Cargando…';
   $('#modePill').className='pill'+(MODE==='local'||STALE?' off':'');
-  $('#who').textContent=(pref.nombre||ME.name||'')+(CANAPPROVE?' · Aprobador':'');
+  $('#who').textContent=(pref.nombre||ME.name||'')+(CANAPPROVE?' · Administración':'');
   $('#who').style.display=(pref.nombre||ME.name)?'':'none';
   const pend=S.reqs.filter(r=>r.estado==='enviada').length;
-  const tabs=[['lista','Requisiciones'],['nueva','＋ Nueva']].concat(CANAPPROVE?[['aprobar','Por aprobar'+(pend?`<span class="badge">${pend}</span>`:'')]]:[]).concat([['prov','Proveedores'],['cfg','Configuración']]);
+  const tabs=[['lista','Requisiciones'],['nueva','＋ Nueva']].concat(CANAPPROVE?[['aprobar','Por autorizar'+(pend?`<span class="badge">${pend}</span>`:'')]]:[]).concat([['cfg','Configuración']]);
   $('#nav').innerHTML=tabs.map(([k,l])=>`<button class="${TAB===k?'on':''}" data-tab="${k}">${l}</button>`).join('');
   let h='';
   if(MODE==='local')h+='<div class="banner">Modo local: los datos se guardan solo en este navegador.</div>';
@@ -164,21 +164,21 @@ function render(){
   if(f==='q'){const q=$('#q');q.focus();q.setSelectionRange(q.value.length,q.value.length)}
   if(OPEN&&$('#modal').classList.contains('on')&&$('#mbox').dataset.view==='det'&&!($('#actForm')&&$('#actForm').innerHTML))verDetalle(OPEN,true);
 }
+const fAut=r=>{const h=[...(r.hist||[])].reverse().find(h=>/Aprob|Autoriz/.test(h.accion));return h?new Date(h.ts).toISOString().slice(0,7):''};
 function kpis(){
   const m=new Date().toISOString().slice(0,7);
   const R=S.reqs;
-  const k=[['enviada','Por aprobar',R.filter(r=>r.estado==='enviada').length],
-    ['aprobada','Aprobadas sin comprar',R.filter(r=>r.estado==='aprobada').length],
-    ['transito','Compradas por recibir',R.filter(r=>['comprada','parcial'].includes(r.estado)).length],
-    ['urgentes','Urgentes abiertas',R.filter(r=>r.urgente&&!['cerrada','cancelada','rechazada','recibida'].includes(r.estado)).length],
-    ['mes','Gastado este mes',money(R.filter(r=>r.compra&&(r.compra.fecha||'').startsWith(m)).reduce((s,r)=>s+totReal(r),0))]];
+  const k=[['enviada','Por autorizar',R.filter(r=>r.estado==='enviada').length],
+    ['urgentes','Urgentes por autorizar',R.filter(r=>r.urgente&&r.estado==='enviada').length],
+    ['aprobada','Autorizadas',R.filter(r=>r.estado==='aprobada').length],
+    ['mes','Autorizado este mes',money(R.filter(r=>r.estado==='aprobada'&&fAut(r).startsWith(m)).reduce((s,r)=>s+totEst(r),0))]];
   return `<div class="grid" style="margin-bottom:14px">${k.map(([f,l,v])=>`<div class="kpi ${f==='urgentes'&&v?'alert':''}" data-filtro="${f}"><span>${l}</span><b>${v}</b></div>`).join('')}</div>`;
 }
 function filtrar(){
   const q=Q.trim().toLowerCase();
   let R=[...S.reqs];
-  const F={activas:r=>!['cerrada','cancelada','rechazada'].includes(r.estado),todas:()=>true,transito:r=>['comprada','parcial'].includes(r.estado),
-    urgentes:r=>r.urgente&&!['cerrada','cancelada','rechazada','recibida'].includes(r.estado),mes:r=>r.compra&&(r.compra.fecha||'').startsWith(new Date().toISOString().slice(0,7))};
+  const F={activas:r=>['borrador','enviada'].includes(r.estado),todas:()=>true,
+    urgentes:r=>r.urgente&&r.estado==='enviada',mes:r=>r.estado==='aprobada'&&fAut(r).startsWith(new Date().toISOString().slice(0,7))};
   R=R.filter(F[FILTRO]||(r=>r.estado===FILTRO));
   if(q)R=R.filter(r=>[folioTxt(r.num),r.solicitante,r.area,r.motivo,...(r.items||[]).map(i=>i.desc),(r.compra||{}).proveedor].join(' ').toLowerCase().includes(q));
   return R.sort((a,b)=>(b.num||0)-(a.num||0));
@@ -191,15 +191,15 @@ function tabla(R){
   <td class="n">${money(r.compra?totReal(r):totEst(r))}${r.compra?'':'<div class="muted">estimado</div>'}</td><td>${tagE(r.estado)}</td></tr>`).join('')}</table></div>`;
 }
 function viewLista(){
-  const opts=[['activas','Abiertas'],['todas','Todas'],...Object.entries(ELBL)];
+  const opts=[['activas','Pendientes'],['todas','Todas'],...['borrador','enviada','aprobada','rechazada','cancelada'].map(e=>[e,ELBL[e]])];
   return kpis()+`<div class="card"><div class="row between"><div class="row" style="flex:1"><input id="q" placeholder="Buscar folio, artículo, proveedor…" value="${esc(Q)}" style="max-width:320px">
-   <select id="filtro" style="max-width:200px">${opts.map(([k,l])=>`<option value="${k}" ${FILTRO===k?'selected':''}>${l}</option>`).join('')}${['transito','urgentes','mes'].includes(FILTRO)?`<option value="${FILTRO}" selected>${{transito:'Por recibir',urgentes:'Urgentes',mes:'Compradas este mes'}[FILTRO]}</option>`:''}</select></div>
+   <select id="filtro" style="max-width:200px">${opts.map(([k,l])=>`<option value="${k}" ${FILTRO===k?'selected':''}>${l}</option>`).join('')}${['urgentes','mes'].includes(FILTRO)?`<option value="${FILTRO}" selected>${{urgentes:'Urgentes',mes:'Autorizadas este mes'}[FILTRO]}</option>`:''}</select></div>
    <div class="row"><button class="btn ghost sm" data-act="csv">Copiar CSV</button><button class="btn red" data-tab="nueva" ${READONLY?'disabled':''}>＋ Nueva requisición</button></div></div>
    <div style="margin-top:12px">${tabla(filtrar())}</div></div>`;
 }
 function viewAprobar(){
   const R=S.reqs.filter(r=>r.estado==='enviada').sort((a,b)=>(b.urgente?1:0)-(a.urgente?1:0)||(a.num-b.num));
-  return `<div class="card"><h2 style="margin-top:0">Pendientes de aprobación (${R.length})</h2>${tabla(R)}</div>`;
+  return `<div class="card"><h2 style="margin-top:0">Pendientes de autorización (${R.length})</h2>${tabla(R)}</div>`;
 }
 function viewProv(){
   const P=[...S.proveedores].sort((a,b)=>a.nombre.localeCompare(b.nombre));
@@ -213,7 +213,7 @@ function viewCfg(){
   <div class="card"><h2 style="margin-top:0">Catálogos</h2>
    <label>Áreas / departamentos (una por línea)<textarea id="cAreas" rows="7">${esc((c.areas||[]).join('\n'))}</textarea></label>
    <label style="margin-top:10px">Unidades (separadas por coma)<input id="cUni" value="${esc((c.unidades||[]).join(', '))}"></label>
-   <label style="margin-top:10px">Monto que se aprueba solo (0 = todo requiere aprobación)<input id="cLim" type="number" min="0" value="${+c.limite||0}"></label>
+   <label style="margin-top:10px">Monto que se autoriza solo (0 = todo lo autoriza Administración)<input id="cLim" type="number" min="0" value="${+c.limite||0}"></label>
    <p class="muted">Aprueban quienes tienen permiso de <b>Editor</b> o son dueños de esta app. Los solicitantes necesitan permiso de <b>Colaborador</b>.</p>
    <button class="btn" data-act="guardarCfg" ${READONLY||!CANAPPROVE?'disabled':''}>Guardar configuración</button></div>`;
 }
@@ -239,7 +239,7 @@ function openForm(r){
    <div class="totalbar"><span>Total estimado</span><b id="rTot">$0</b></div>
    <label style="margin-top:10px">Observaciones<textarea id="rObs">${esc(r.obs||'')}</textarea></label>
    <div class="row between" style="margin-top:14px"><button class="btn ghost" data-act="cerrarModal">Cancelar</button>
-   <span class="row"><button class="btn ghost" data-act="guardarReq" data-enviar="0">Guardar borrador</button><button class="btn red" data-act="guardarReq" data-enviar="1">Enviar a aprobación</button></span></div>`,'form');
+   <span class="row"><button class="btn ghost" data-act="guardarReq" data-enviar="0">Guardar borrador</button><button class="btn red" data-act="guardarReq" data-enviar="1">Enviar a autorización</button></span></div>`,'form');
   FORMREQ=r; drawItems();
   $('#mbox').oninput=e=>{const t=e.target;if(t.dataset.i!=null){ITEMS[+t.dataset.i][t.dataset.f]=t.type==='number'?(+t.value||0):t.value;updTot()}};
 }
@@ -267,8 +267,8 @@ async function guardarReq(enviar){
     if(!r.id){r.num=await nextFolio();r.creada=Date.now();r.creadaPor=ME.id;r.hist=[]}
     r.hist=[...(r.hist||[]),{ts:Date.now(),quien:pref.nombre||sol,accion:FORMREQ.id?'Editó':'Creó'}];
     r.estado='borrador';
-    if(enviar){r.estado='enviada';r.hist.push({ts:Date.now(),quien:pref.nombre||sol,accion:'Envió a aprobación'});
-      const lim=+cfg().limite||0;if(lim&&totEst(r)<=lim){r.estado='aprobada';r.hist.push({ts:Date.now(),quien:'Sistema',accion:'Aprobación automática',nota:'Monto menor a '+money(lim)})}}
+    if(enviar){r.estado='enviada';r.hist.push({ts:Date.now(),quien:pref.nombre||sol,accion:'Envió a autorización'});
+      const lim=+cfg().limite||0;if(lim&&totEst(r)<=lim){r.estado='aprobada';r.hist.push({ts:Date.now(),quien:'Sistema',accion:'Autorización automática',nota:'Monto menor a '+money(lim)})}}
     const saved=await put('reqs',r);closeModal();toast(folioTxt(r.num)+(enviar?' enviada':' guardada'));(function w(n){S.reqs.find(x=>x.id===saved.id)||n<=0?verDetalle(saved.id):setTimeout(()=>w(n-1),150)})(10);
   }catch(e){btns.forEach(b=>b.disabled=false)}
 }
@@ -277,18 +277,15 @@ async function guardarReq(enviar){
 function verDetalle(id,keep){
   const r=S.reqs.find(x=>x.id===id);if(!r){closeModal();return}
   OPEN=id;
-  const idx=ESTADOS.indexOf(r.estado==='parcial'?'comprada':r.estado);
-  const flow=['borrador','enviada','aprobada','comprada','recibida','cerrada'].map((e,i)=>`<span class="${['rechazada','cancelada'].includes(r.estado)?'':i<idx?'done':i===idx?'cur':''}">${ELBL[e].replace('Por aprobar','Enviada')}</span>`).join('');
+  const idx=ESTADOS.indexOf(r.estado);
+  const flow=['borrador','enviada','aprobada'].map((e,i)=>`<span class="${['rechazada','cancelada'].includes(r.estado)?'':i<idx?'done':i===idx?'cur':''}">${['Solicita','Enviada','Autorizada'][i]}</span>`).join('');
   const C=r.compra;
   const acts=[];
   if(!READONLY){
-    if(r.estado==='borrador')acts.push(['editar','Editar','ghost'],['enviar','Enviar a aprobación','red']);
-    if(r.estado==='enviada'&&CANAPPROVE)acts.push(['rechazar','Rechazar','ghost'],['aprobar','Aprobar','ok']);
+    if(r.estado==='borrador')acts.push(['editar','Editar','ghost'],['enviar','Enviar a autorización','red']);
+    if(r.estado==='enviada'&&CANAPPROVE)acts.push(['rechazar','Rechazar','ghost'],['aprobar','Autorizar','ok']);
     if(r.estado==='rechazada')acts.push(['editar','Corregir y reenviar','ghost']);
-    if(r.estado==='aprobada')acts.push(['comprar','Registrar compra','sky']);
-    if(['comprada','parcial'].includes(r.estado))acts.push(['recibir','Registrar recepción','ok']);
-    if(r.estado==='recibida')acts.push(['cerrar','Cerrar requisición','']);
-    if(!['cerrada','cancelada','recibida'].includes(r.estado))acts.unshift(['cancelar','Cancelar requisición','ghost']);
+    if(['borrador','enviada','rechazada'].includes(r.estado))acts.unshift(['cancelar','Cancelar requisición','ghost']);
   }
   const anyRec=(r.items||[]).some(i=>i.recibido);
   openModal(`<div class="row between"><div><span class="fol" style="font-size:28px">${folioTxt(r.num)}</span> ${tagE(r.estado)} ${r.urgente?'<span class="tag urg">URGENTE</span>':''}</div><button class="btn ghost sm" data-act="cerrarModal">✕</button></div>
@@ -319,8 +316,8 @@ function flowAct(a){
     $('#aGo').onclick=async()=>{const n=$('#aNota')?$('#aNota').value.trim():'';const e=fn(n);if(typeof e==='string')return toast(e);$('#aGo').disabled=true;await e};box.scrollIntoView({behavior:'smooth'})};
   if(a==='x'){box.innerHTML='';return}
   if(a==='editar'){openForm(r);return}
-  if(a==='enviar')return confirmBox('¿Enviar a aprobación?',false,'Enviar','red',()=>mover(r,(+cfg().limite&&totEst(r)<=+cfg().limite)?'aprobada':'enviada','Envió a aprobación'));
-  if(a==='aprobar')return confirmBox('Aprobar requisición',true,'Aprobar','ok',n=>mover(r,'aprobada','Aprobó',n));
+  if(a==='enviar')return confirmBox('¿Enviar a autorización?',false,'Enviar','red',()=>mover(r,(+cfg().limite&&totEst(r)<=+cfg().limite)?'aprobada':'enviada','Envió a autorización'));
+  if(a==='aprobar')return confirmBox('Autorizar requisición',true,'Autorizar','ok',n=>mover(r,'aprobada','Autorizó',n));
   if(a==='rechazar')return confirmBox('Rechazar requisición',true,'Rechazar','red',n=>n?mover(r,'rechazada','Rechazó',n):'Escribe el motivo del rechazo');
   if(a==='cancelar')return confirmBox('Cancelar requisición',true,'Cancelar requisición','red',n=>mover(r,'cancelada','Canceló',n));
   if(a==='cerrar')return confirmBox('Cerrar requisición',true,'Cerrar','',n=>mover(r,'cerrada','Cerró',n));
@@ -364,7 +361,7 @@ function formatoHTML(r){
   ${C&&C.extra?`<tr><td colspan=5 class="n">Envío / otros</td><td class="n">${money(C.extra)}</td></tr>`:''}<tr><td colspan=5 class="n"><b>TOTAL ${C?'':'ESTIMADO'}</b></td><td class="n"><b>${money(C?totReal(r):totEst(r))}</b></td></tr></table>
   ${C?`<p><b>Proveedor:</b> ${esc(C.proveedor)} · <b>Factura/OC:</b> ${esc(C.factura||'—')} · <b>Pago:</b> ${esc(C.pago||'')} · <b>Fecha compra:</b> ${C.fecha}</p>`:''}
   ${r.obs?`<p><b>Observaciones:</b> ${esc(r.obs)}</p>`:''}
-  <div class="f"><div>Solicita</div><div>Autoriza</div><div>Recibe</div></div></body></html>`;
+  <div class="f"><div>Solicita<br>${esc(r.solicitante)}</div><div>Autoriza (Administración)<br>${esc(([...(r.hist||[])].reverse().find(h=>/Aprob|Autoriz/.test(h.accion))||{}).quien||'')}</div></div></body></html>`;
 }
 async function descargar(){
   const r=S.reqs.find(x=>x.id===OPEN);if(!r)return;
@@ -372,8 +369,8 @@ async function descargar(){
   catch(e){toast('No se pudo descargar en este navegador')}
 }
 function csv(){
-  const L=[['Folio','Fecha','Solicitante','Area','Estado','Urgente','Articulo','Cantidad','Unidad','Precio est','Precio real','Recibido','Proveedor','Factura','Fecha compra']];
-  for(const r of filtrar())for(const i of r.items||[])L.push([folioTxt(r.num),fd(r.creada),r.solicitante,r.area,ELBL[r.estado],r.urgente?'Si':'No',i.desc,i.cant,i.unidad,i.precio,i.precioReal??'',i.recibido||0,(r.compra||{}).proveedor||'',(r.compra||{}).factura||'',(r.compra||{}).fecha||'']);
+  const L=[['Folio','Fecha','Solicitante','Area','Estado','Autorizo','Urgente','Articulo','Cantidad','Unidad','Precio est','Importe','Proveedor sugerido']];
+  for(const r of filtrar())for(const i of r.items||[])L.push([folioTxt(r.num),fd(r.creada),r.solicitante,r.area,ELBL[r.estado],([...(r.hist||[])].reverse().find(h=>/Aprob|Autoriz/.test(h.accion))||{}).quien||'',r.urgente?'Si':'No',i.desc,i.cant,i.unidad,i.precio,i.cant*i.precio,i.prov||'']);
   return L.map(x=>x.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
 }
 function editProv(p){
