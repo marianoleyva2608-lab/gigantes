@@ -390,7 +390,9 @@ ${items.map((i,k)=>i?`<tr><td>${k+1}</td><td>${i.cant}</td><td>${esc(i.unidad)}<
 async function descargar(blank){
   const r=blank?{}:S.reqs.find(x=>x.id===OPEN);if(!r)return;
   try{const d=window.claude&&await claude.use('downloads');if(!d)throw 0;await d.save({filename:(blank?'Formato_requisicion':folioTxt(r.num))+'.html',data:formatoHTML(r)});toast('Abre el archivo y usa Imprimir → Guardar como PDF')}
-  catch(e){toast('No se pudo descargar en este navegador')}
+  catch(e){try{const html=formatoHTML(r),u=URL.createObjectURL(new Blob([html],{type:'text/html'})),w=window.open(u,'_blank');
+    if(!w){const a=document.createElement('a');a.href=u;a.download=(blank?'Formato_requisicion':folioTxt(r.num))+'.html';document.body.appendChild(a);a.click();a.remove()}
+    setTimeout(()=>URL.revokeObjectURL(u),60000);toast('Se abrió el formato: usa Imprimir → Guardar como PDF')}catch(e2){toast('No se pudo descargar en este navegador')}}
 }
 function csv(){
   const L=[['Folio','Fecha','Solicitante','Area','Estado','Autorizo','Urgente','Articulo','Cantidad','Unidad','Precio est','Importe','Proveedor sugerido']];
