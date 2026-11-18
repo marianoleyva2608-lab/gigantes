@@ -1,0 +1,382 @@
+[
+ {
+  "id": "rsim01",
+  "num": 1,
+  "creada": 1794729600000,
+  "solicitante": "Laura Méndez",
+  "area": "Bebidas / Almacén",
+  "fechaReq": "2026-11-16",
+  "urgente": false,
+  "motivo": "Resurtido de cerveza para serie vs Rieleros",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Cerveza clara lata 355 ml (caja 24)",
+    "cant": 40,
+    "unidad": "caja",
+    "precio": 380,
+    "prov": "Distribuidora del Centro"
+   },
+   {
+    "desc": "Cerveza oscura lata 355 ml (caja 24)",
+    "cant": 20,
+    "unidad": "caja",
+    "precio": 395,
+    "prov": "Distribuidora del Centro"
+   }
+  ],
+  "estado": "aprobada",
+  "hist": [
+   {
+    "ts": 1794729600000,
+    "quien": "Laura Méndez",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1794730200000,
+    "quien": "Laura Méndez",
+    "accion": "Envió a autorización"
+   },
+   {
+    "ts": 1794740400000,
+    "quien": "Administración",
+    "accion": "Autorizó",
+    "nota": "Autorizado, entregar antes del jueves"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim02",
+  "num": 2,
+  "creada": 1794729600000,
+  "solicitante": "Laura Méndez",
+  "area": "Bebidas / Almacén",
+  "fechaReq": "2026-11-16",
+  "urgente": true,
+  "motivo": "Hielo para los 3 juegos de la serie",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Hielo bolsa 5 kg",
+    "cant": 150,
+    "unidad": "pza",
+    "precio": 28,
+    "prov": "Hielo Cristal"
+   }
+  ],
+  "estado": "aprobada",
+  "hist": [
+   {
+    "ts": 1794729600000,
+    "quien": "Laura Méndez",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1794730200000,
+    "quien": "Laura Méndez",
+    "accion": "Envió a autorización"
+   },
+   {
+    "ts": 1794740400000,
+    "quien": "Administración",
+    "accion": "Autorizó",
+    "nota": "Urgente, autorizado"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim03",
+  "num": 3,
+  "creada": 1794816000000,
+  "solicitante": "Jorge Salas",
+  "area": "Mantenimiento",
+  "fechaReq": "2026-11-17",
+  "urgente": true,
+  "motivo": "Reparación de luminarias en tribuna norte",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Lámpara LED 200 W",
+    "cant": 6,
+    "unidad": "pza",
+    "precio": 1450,
+    "prov": "Ferretería Industrial Ags"
+   },
+   {
+    "desc": "Cable THW cal. 10",
+    "cant": 100,
+    "unidad": "m",
+    "precio": 18,
+    "prov": "Ferretería Industrial Ags"
+   },
+   {
+    "desc": "Mano de obra electricista",
+    "cant": 1,
+    "unidad": "servicio",
+    "precio": 2500,
+    "prov": ""
+   }
+  ],
+  "estado": "enviada",
+  "hist": [
+   {
+    "ts": 1794816000000,
+    "quien": "Jorge Salas",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1794816600000,
+    "quien": "Jorge Salas",
+    "accion": "Envió a autorización"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim04",
+  "num": 4,
+  "creada": 1794801600000,
+  "solicitante": "Rocío Vargas",
+  "area": "Limpieza",
+  "fechaReq": "2026-11-17",
+  "urgente": false,
+  "motivo": "Insumos de limpieza del mes",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Bolsa negra jumbo (rollo)",
+    "cant": 30,
+    "unidad": "paquete",
+    "precio": 85,
+    "prov": "Limpiezas del Bajío"
+   },
+   {
+    "desc": "Cloro 20 lt",
+    "cant": 6,
+    "unidad": "pza",
+    "precio": 210,
+    "prov": "Limpiezas del Bajío"
+   },
+   {
+    "desc": "Papel higiénico jumbo",
+    "cant": 24,
+    "unidad": "paquete",
+    "precio": 320,
+    "prov": "Limpiezas del Bajío"
+   }
+  ],
+  "estado": "enviada",
+  "hist": [
+   {
+    "ts": 1794801600000,
+    "quien": "Rocío Vargas",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1794802200000,
+    "quien": "Rocío Vargas",
+    "accion": "Envió a autorización"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim05",
+  "num": 5,
+  "creada": 1794884400000,
+  "solicitante": "Marco Ibarra",
+  "area": "Equipo deportivo",
+  "fechaReq": "2026-11-18",
+  "urgente": false,
+  "motivo": "Pelotas y bates para práctica",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Pelota oficial (docena)",
+    "cant": 10,
+    "unidad": "caja",
+    "precio": 1850,
+    "prov": "Deportes Rawlings MX"
+   },
+   {
+    "desc": "Bate de madera",
+    "cant": 6,
+    "unidad": "pza",
+    "precio": 1200,
+    "prov": "Deportes Rawlings MX"
+   }
+  ],
+  "estado": "aprobada",
+  "hist": [
+   {
+    "ts": 1794884400000,
+    "quien": "Marco Ibarra",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1794885000000,
+    "quien": "Marco Ibarra",
+    "accion": "Envió a autorización"
+   },
+   {
+    "ts": 1794895200000,
+    "quien": "Administración",
+    "accion": "Autorizó",
+    "nota": "OK"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim06",
+  "num": 6,
+  "creada": 1794988800000,
+  "solicitante": "Ana Lucía Torres",
+  "area": "Mercadotecnia",
+  "fechaReq": "2026-11-19",
+  "urgente": false,
+  "motivo": "Playeras para lanzamiento en tribuna",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Playera promocional impresa",
+    "cant": 300,
+    "unidad": "pza",
+    "precio": 65,
+    "prov": "Serigrafía Gigante"
+   }
+  ],
+  "estado": "rechazada",
+  "hist": [
+   {
+    "ts": 1794988800000,
+    "quien": "Ana Lucía Torres",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1794989400000,
+    "quien": "Ana Lucía Torres",
+    "accion": "Envió a autorización"
+   },
+   {
+    "ts": 1795006800000,
+    "quien": "Administración",
+    "accion": "Rechazó",
+    "nota": "Ya hay 200 playeras en bodega; usar esas primero"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim07",
+  "num": 7,
+  "creada": 1795057200000,
+  "solicitante": "Laura Méndez",
+  "area": "Bebidas / Almacén",
+  "fechaReq": "2026-11-20",
+  "urgente": false,
+  "motivo": "Vasos para micheladas",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Vaso 32 oz con tapa",
+    "cant": 1000,
+    "unidad": "pza",
+    "precio": 4.5,
+    "prov": "Desechables Ags"
+   },
+   {
+    "desc": "Escarchador chamoy/tajín",
+    "cant": 10,
+    "unidad": "kg",
+    "precio": 95,
+    "prov": "Desechables Ags"
+   }
+  ],
+  "estado": "enviada",
+  "hist": [
+   {
+    "ts": 1795057200000,
+    "quien": "Laura Méndez",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1795057800000,
+    "quien": "Laura Méndez",
+    "accion": "Envió a autorización"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim08",
+  "num": 8,
+  "creada": 1795053600000,
+  "solicitante": "Pedro Ruiz",
+  "area": "Taquilla",
+  "fechaReq": "2026-11-20",
+  "urgente": false,
+  "motivo": "Rollos para impresora de boletos",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Rollo térmico 80 mm",
+    "cant": 50,
+    "unidad": "pza",
+    "precio": 22,
+    "prov": "Papelería Lozano"
+   }
+  ],
+  "estado": "borrador",
+  "hist": [
+   {
+    "ts": 1795053600000,
+    "quien": "Pedro Ruiz",
+    "accion": "Creó"
+   }
+  ],
+  "sim": true
+ },
+ {
+  "id": "rsim09",
+  "num": 9,
+  "creada": 1794902400000,
+  "solicitante": "Jorge Salas",
+  "area": "Mantenimiento",
+  "fechaReq": "2026-11-18",
+  "urgente": false,
+  "motivo": "Pintura de dugouts",
+  "obs": "",
+  "items": [
+   {
+    "desc": "Pintura esmalte azul 19 lt",
+    "cant": 2,
+    "unidad": "pza",
+    "precio": 2300,
+    "prov": "Comex"
+   }
+  ],
+  "estado": "cancelada",
+  "hist": [
+   {
+    "ts": 1794902400000,
+    "quien": "Jorge Salas",
+    "accion": "Creó"
+   },
+   {
+    "ts": 1794903000000,
+    "quien": "Jorge Salas",
+    "accion": "Envió a autorización"
+   },
+   {
+    "ts": 1794909600000,
+    "quien": "Jorge Salas",
+    "accion": "Canceló",
+    "nota": "Se hará en pretemporada"
+   }
+  ],
+  "sim": true
+ }
+]

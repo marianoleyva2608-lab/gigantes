@@ -38,3 +38,32 @@ Partido de ejemplo para probar el **Control de Cubeteros** y como referencia de 
 | Michelada $110 | 6 + 6 = 12 | 1 | 11 → $1,210 |
 
 Venta $2,190 − comisión (14×$8 + 11×$12 = $244) = **$1,946**. Pagó $500 + $1,396 = $1,896 → **faltan $50**.
+
+## Juego 2 (20 nov) — evento cerrado
+
+| # | Cubetero | Entregado | Vendido | Venta | Comisión | Pagó |
+|---|---|---|---|---|---|---|
+| 1 | Juan Pérez | 132 | 130 | $10,500 | $1,180 | $9,320 (incluye $300 tarjeta) |
+| 2 | Luis Gómez | 108 | 100 | $4,875 | $569 | $4,306 |
+| 3 | Ana Ruiz | 114 | 107 | $4,745 | $532 | $4,213 |
+| 4 | Pedro Martínez | 60 | 55 | $4,165 | $482 | $3,683 (incluye $300 tarjeta) |
+| 5 | Carlos Díaz | 84 | 73 | $2,565 | $313 | $2,252 |
+| 6 | Miguel Torres | 144 | 142 | $10,825 | $1,254 | $9,571 |
+
+Total: venta $37,675 · comisiones $4,330 · neto recibido $33,345 · todos liquidados.
+
+## Requisiciones simuladas
+
+| Folio | Área | Concepto | Importe est. | Estado |
+|---|---|---|---|---|
+| REQ-0001 | Bebidas / Almacén | Resurtido de cerveza para serie vs Rieleros | $23,100.00 | Autorizada |
+| REQ-0002 | Bebidas / Almacén | Hielo para los 3 juegos de la serie (URGENTE) | $4,200.00 | Autorizada |
+| REQ-0003 | Mantenimiento | Reparación de luminarias en tribuna norte (URGENTE) | $13,000.00 | Por autorizar |
+| REQ-0004 | Limpieza | Insumos de limpieza del mes | $11,490.00 | Por autorizar |
+| REQ-0005 | Equipo deportivo | Pelotas y bates para práctica | $25,700.00 | Autorizada |
+| REQ-0006 | Mercadotecnia | Playeras para lanzamiento en tribuna | $19,500.00 | Rechazada |
+| REQ-0007 | Bebidas / Almacén | Vasos para micheladas | $5,450.00 | Por autorizar |
+| REQ-0008 | Taquilla | Rollos para impresora de boletos | $1,100.00 | Borrador |
+| REQ-0009 | Mantenimiento | Pintura de dugouts | $4,600.00 | Cancelada |
+
+Si en el navegador ya existía una requisición con el mismo folio, las de ejemplo se recorren al siguiente número.
